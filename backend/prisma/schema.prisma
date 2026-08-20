@@ -1,0 +1,195 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  password         String
+  name             String
+  role             String            @default("SALES") // ADMIN, SALES, DEVELOPER
+  status           String            @default("ACTIVE") // ACTIVE, DISABLED
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  assignedTasks    Task[]            @relation("AssignedTasks")
+  createdTasks     Task[]            @relation("CreatedTasks")
+  assignedRequests CustomerRequest[] @relation("AssignedRequests")
+  createdRequests  CustomerRequest[] @relation("CreatedRequests")
+  activities       Activity[]
+  notes            Note[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model Company {
+  id              String            @id @default(uuid())
+  companyName     String
+  status          String            @default("Active") // Lead, Analysis, Active, Passive, Completed
+  industry        String?
+  description     String?
+  website         String?
+  phone           String?
+  email           String?
+  address         String?
+  taxNumber       String?
+  currentSoftware String?
+  eInvoiceStatus  String?           @default("Hayır") // Evet, Hayır, Süreçte
+  eLedgerStatus   String?           @default("Hayır") // Evet, Hayır, Süreçte
+  isArchived      Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  contacts        CompanyContact[]
+  tasks           Task[]
+  customerRequests CustomerRequest[]
+  activities      Activity[]
+  notes           Note[]
+
+  @@index([companyName])
+  @@index([status])
+  @@index([isArchived])
+}
+
+model CompanyContact {
+  id          String   @id @default(uuid())
+  companyId   String
+  name        String
+  position    String?
+  phone       String?
+  email       String?
+  isPrimary   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+}
+
+model Task {
+  id             String      @id @default(uuid())
+  title          String
+  description    String?
+  companyId      String
+  status         String      @default("Pending") // Pending, Analysis, Planned, Development, Testing, Customer Approval, Completed, Cancelled
+  priority       String      @default("Medium") // Urgent, High, Medium, Low
+  assignedUserId String?
+  createdById    String
+  startDate      DateTime?
+  dueDate        DateTime?
+  isArchived     Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  company        Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  assignedUser   User?       @relation("AssignedTasks", fields: [assignedUserId], references: [id])
+  creator        User        @relation("CreatedTasks", fields: [createdById], references: [id])
+  activities     Activity[]
+  notes          Note[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([priority])
+  @@index([assignedUserId])
+  @@index([dueDate])
+  @@index([isArchived])
+}
+
+model CustomerRequest {
+  id             String      @id @default(uuid())
+  title          String
+  description    String
+  requestedBy    String?
+  companyId      String
+  priority       String      @default("Medium") // Urgent, High, Medium, Low
+  status         String      @default("New") // New, Analysis, Development, Waiting for Customer, Completed, Cancelled
+  assignedUserId String?
+  createdById    String
+  solution       String?
+  isArchived     Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  company        Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  assignedUser   User?       @relation("AssignedRequests", fields: [assignedUserId], references: [id])
+  creator        User        @relation("CreatedRequests", fields: [createdById], references: [id])
+  activities     Activity[]
+  notes          Note[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([priority])
+  @@index([assignedUserId])
+  @@index([isArchived])
+}
+
+model Activity {
+  id          String           @id @default(uuid())
+  userId      String
+  companyId   String?
+  taskId      String?
+  requestId   String?
+  action      String           // e.g. COMPANY_CREATED, TASK_STATUS_UPDATED, REQUEST_CREATED
+  description String
+  createdAt   DateTime         @default(now())
+
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company     Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  task        Task?            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  request     CustomerRequest? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([taskId])
+  @@index([requestId])
+  @@index([createdAt])
+}
+
+model Note {
+  id          String           @id @default(uuid())
+  content     String
+  createdById String
+  companyId   String?
+  taskId      String?
+  requestId   String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  creator     User             @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  company     Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  task        Task?            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  request     CustomerRequest? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([createdById])
+  @@index([companyId])
+  @@index([taskId])
+  @@index([requestId])
+}
+
+model CustomStatus {
+  id        String   @id @default(uuid())
+  name      String
+  category  String   // COMPANY, TASK, REQUEST
+  color     String?  // hex or tailwind badge color
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([name, category])
+}
+
+model CustomPriority {
+  id        String   @id @default(uuid())
+  name      String   @unique // Urgent, High, Medium, Low
+  color     String   // red, orange, yellow, gray
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}

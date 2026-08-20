@@ -1,0 +1,20 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const company_controller_js_1 = require("../controllers/company.controller.js");
+const auth_middleware_js_1 = require("../middleware/auth.middleware.js");
+const role_middleware_js_1 = require("../middleware/role.middleware.js");
+const validate_middleware_js_1 = require("../middleware/validate.middleware.js");
+const index_js_1 = require("../validators/index.js");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_js_1.authenticate);
+router.get('/', company_controller_js_1.getCompanies);
+router.get('/:id', company_controller_js_1.getCompanyById);
+router.post('/', role_middleware_js_1.requireSalesOrAdmin, (0, validate_middleware_js_1.validate)(index_js_1.createCompanySchema), company_controller_js_1.createCompany);
+router.put('/:id', role_middleware_js_1.requireSalesOrAdmin, (0, validate_middleware_js_1.validate)(index_js_1.updateCompanySchema), company_controller_js_1.updateCompany);
+router.delete('/:id', role_middleware_js_1.requireAdmin, company_controller_js_1.archiveCompany);
+// Contact sub-routes
+router.post('/:id/contacts', role_middleware_js_1.requireSalesOrAdmin, (0, validate_middleware_js_1.validate)(index_js_1.companyContactSchema), company_controller_js_1.addContact);
+router.put('/contacts/:contactId', role_middleware_js_1.requireSalesOrAdmin, (0, validate_middleware_js_1.validate)(index_js_1.companyContactSchema.partial()), company_controller_js_1.updateContact);
+router.delete('/contacts/:contactId', role_middleware_js_1.requireSalesOrAdmin, company_controller_js_1.deleteContact);
+exports.default = router;

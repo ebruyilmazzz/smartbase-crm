@@ -1,0 +1,26 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const auth_routes_js_1 = __importDefault(require("./auth.routes.js"));
+const company_routes_js_1 = __importDefault(require("./company.routes.js"));
+const task_routes_js_1 = __importDefault(require("./task.routes.js"));
+const request_routes_js_1 = __importDefault(require("./request.routes.js"));
+const activity_routes_js_1 = __importDefault(require("./activity.routes.js"));
+const note_routes_js_1 = __importDefault(require("./note.routes.js"));
+const report_routes_js_1 = __importDefault(require("./report.routes.js"));
+const search_routes_js_1 = __importDefault(require("./search.routes.js"));
+const settings_routes_js_1 = __importDefault(require("./settings.routes.js"));
+const router = (0, express_1.Router)();
+router.use('/auth', auth_routes_js_1.default);
+router.use('/companies', company_routes_js_1.default);
+router.use('/tasks', task_routes_js_1.default);
+router.use('/requests', request_routes_js_1.default);
+router.use('/activities', activity_routes_js_1.default);
+router.use('/notes', note_routes_js_1.default);
+router.use('/reports', report_routes_js_1.default);
+router.use('/search', search_routes_js_1.default);
+router.use('/settings', settings_routes_js_1.default);
+exports.default = router;

@@ -1,0 +1,17 @@
+{
+  "name": "smartbase-crm",
+  "version": "1.0.0",
+  "description": "SMARTBASE CRM - Full-Stack Customer Relationship Management System",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix backend & npm run dev --prefix frontend",
+    "dev:backend": "npm run dev --prefix backend",
+    "dev:frontend": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "test": "npm run test --prefix backend",
+    "seed": "npm run prisma:seed --prefix backend"
+  },
+  "keywords": ["crm", "smartbase", "react", "nodejs", "prisma", "typescript"],
+  "author": "SmartBase",
+  "license": "ISC"
+}
